@@ -174,3 +174,5 @@ body{
 
 /* keep main content above hearts */
 .screen{ z-index: 1; }
+
+#noBtn { z-index: 10; }
