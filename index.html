@@ -8,19 +8,10 @@
 </head>
 <body>
 
-<audio id="bgm" loop preload="auto">
-  <source src="https://cdn.pixabay.com/download/audio/2022/02/23/audio_7b2f7f4e0a.mp3?filename=love-110624.mp3" type="audio/mpeg">
-</audio>
+  <div class="floatLayer" aria-hidden="true"></div>
 
-<div class="topBtns">
-  <button id="musicBtn" class="iconBtn" aria-label="Toggle music">🔈</button>
-</div>
-
-<main class="wrap">
-  <section class="card" id="card">
-    <div class="floatLayer" aria-hidden="true"></div>
-
-    <div id="content">
+  <main class="screen" id="screen">
+    <div id="content" class="content">
       <img class="gif" src="https://gifdb.com/images/high/cute-love-bear-roses-ou7zho5oosxnpo6k.gif" alt="cute"/>
 
       <h1 class="title glow">
@@ -35,9 +26,8 @@
       <p id="hint" class="hint">Try pressing “No” 😄</p>
     </div>
 
-    <div id="reveal" class="hidden" aria-live="polite">
+    <div id="reveal" class="reveal hidden" aria-live="polite">
       <img class="gif" src="https://media.tenor.com/gUiu1zyxfzYAAAAi/bear-kiss-bear-kisses.gif" alt="yay"/>
-
       <div class="successText glow">Ok yay!!! 🥰</div>
       <p class="loveMsg">Borahae 💜</p>
 
@@ -50,9 +40,8 @@
       <button id="copyBtn" class="btn ghost">Copy cute reply</button>
       <p id="copied" class="tiny"></p>
     </div>
-  </section>
-</main>
+  </main>
 
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
