@@ -10,6 +10,7 @@ const copied = document.getElementById("copied");
 const typeMsg = document.getElementById("typeMsg");
 
 let noCount = 0;
+let hoverCount = 0; // count hovers separately so “No” doesn’t disappear just from hover
 
 const phrases = [
   "No",
@@ -47,42 +48,98 @@ function burst(){
   }
 }
 
-// KEY FIX: Move No using transform (relative), so it never “disappears”
-function moveNo(){
-  // Move within a reasonable range around its original position
-  const x = (Math.random() * 320) - 160;   // -160..160
-  const y = (Math.random() * 180) - 40;    // -40..140
-  noBtn.style.transform = `translate(${x}px, ${y}px)`;
+/**
+ * ✅ Safari-proof movement:
+ * Put the NO button at a random position INSIDE the viewport.
+ * Using position:fixed avoids weird offset-parent issues in flex layouts.
+ */
+function moveNoToSafeSpot(){
+  const pad = 16;
+
+  // measure button size
+  const btnRect = noBtn.getBoundingClientRect();
+
+  const maxLeft = Math.max(pad, window.innerWidth - btnRect.width - pad);
+  const maxTop  = Math.max(pad, window.innerHeight - btnRect.height - pad);
+
+  // keep it below the top area so it doesn't cover the title/gif
+  const minTop = Math.min(Math.max(240, pad), maxTop);
+
+  const left = pad + Math.random() * (maxLeft - pad);
+  const top  = minTop + Math.random() * (maxTop - minTop);
+
+  noBtn.style.position = "fixed";
+  noBtn.style.left = `${left}px`;
+  noBtn.style.top = `${top}px`;
+  noBtn.style.transform = "none"; // clear old translate
+  noBtn.style.zIndex = "10";
 }
 
-// hover: only move (desktop)
-noBtn.addEventListener("mouseenter", () => moveNo());
+/** keep YES growing after 5 tries */
+function growYes(){
+  const scale = Math.min(1.6, 1 + (noCount - 4) * 0.10);
+  yesBtn.style.transform = `scale(${scale})`;
+}
 
-// click/tap: increment + phrases + logic
-function handleNo(e){
-  e.preventDefault();
-  noCount++;
-
-  noBtn.textContent = phrases[Math.min(noCount, phrases.length - 1)];
-  hint.textContent = "Hehe nope 😏";
-
-  moveNo();
-
-  // after 5 tries: yes grows
-  if (noCount >= 5){
-    const scale = Math.min(1.6, 1 + (noCount - 4) * 0.10);
-    yesBtn.style.transform = `scale(${scale})`;
-  }
-
-  // after 8 tries: no disappears
+/** hide NO after 8 actual tries (click/touch), not from hover */
+function maybeHideNo(){
   if (noCount >= 8){
     noBtn.style.display = "none";
     hint.textContent = "Okay okay… only Yes left 😳💜";
   }
 }
 
+/**
+ * Update phrase text.
+ * We show phrases based on noCount primarily, but if user can’t click,
+ * we’ll also advance on hover/touch-move using hoverCount.
+ */
+function setNoText(index){
+  noBtn.textContent = phrases[Math.min(index, phrases.length - 1)];
+}
+
+/**
+ * Desktop hover:
+ * - Move away
+ * - ALSO show a new phrase (so user sees phrases even if they never click)
+ * We do NOT increment noCount here (so it won’t disappear from hover).
+ */
+function onNoHover(){
+  if (noBtn.style.display === "none") return;
+
+  hoverCount++;
+  setNoText(Math.max(noCount, hoverCount)); // show progress via hover
+  hint.textContent = "Hehe nope 😏";
+  moveNoToSafeSpot();
+}
+
+noBtn.addEventListener("mouseenter", onNoHover);
+
+/**
+ * Click/tap:
+ * - This is the “real” noCount for yes-grow and hide-after-8.
+ */
+function handleNo(e){
+  e.preventDefault();
+  if (noBtn.style.display === "none") return;
+
+  noCount++;
+  setNoText(noCount);
+  hint.textContent = "Hehe nope 😏";
+  moveNoToSafeSpot();
+
+  if (noCount >= 5) growYes();
+  maybeHideNo();
+}
+
 noBtn.addEventListener("click", handleNo);
 noBtn.addEventListener("touchstart", handleNo, { passive:false });
+
+// On mobile, some users try to “grab” or slide — this helps show phrases too.
+noBtn.addEventListener("touchmove", (e) => {
+  e.preventDefault();
+  onNoHover();
+}, { passive:false });
 
 function typeText(text){
   typeMsg.textContent = "";
